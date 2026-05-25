@@ -7,9 +7,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4">
-              <div className="font-heading text-3xl font-bold tracking-tight text-foreground flex items-baseline">
-                MAYHEM<span className="text-primary text-sm ml-1 tracking-widest">ATHLETICS</span>
-              </div>
+              <img
+                src="/mayhem-logo.jpg"
+                alt="Mayhem Athletics"
+                className="h-16 w-auto rounded-sm object-contain"
+              />
             </Link>
             <p className="text-muted-foreground max-w-sm mt-2 font-medium">
               Intense, metric-driven training for serious young athletes. Get to the next level.

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Mayhem Athletics"
+version = "1.0.0"
+id = "artifacts/mayhem-athletics"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22928
+
+[services.development]
+run = "pnpm --filter @workspace/mayhem-athletics run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mayhem-athletics", "run", "build" ]
+publicDir = "artifacts/mayhem-athletics/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22928"
+BASE_PATH = "/"

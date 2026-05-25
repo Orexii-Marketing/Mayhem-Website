@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Mayhem Athletics API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: services
+    description: Training services
+  - name: registrations
+    description: Athlete registrations
+  - name: inquiries
+    description: Contact inquiries
 paths:
   /healthz:
     get:
@@ -24,6 +30,87 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List all training services
+      description: Returns all sports and their available training formats with pricing
+      responses:
+        "200":
+          description: List of sports with training formats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SportService"
+
+  /registrations:
+    post:
+      operationId: createRegistration
+      tags: [registrations]
+      summary: Submit a training registration
+      description: Register an athlete for training — saves to Airtable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationInput"
+      responses:
+        "201":
+          description: Registration created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inquiries:
+    post:
+      operationId: createInquiry
+      tags: [inquiries]
+      summary: Submit a contact inquiry
+      description: Send a general inquiry — saves to Airtable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InquiryInput"
+      responses:
+        "201":
+          description: Inquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InquiryResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +121,131 @@ components:
       required:
         - status
 
+    TrainingFormat:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: ["string", "null"]
+        duration:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - description
+
+    SportService:
+      type: object
+      properties:
+        sport:
+          type: string
+          enum: [football, soccer, basketball, baseball]
+        label:
+          type: string
+        icon:
+          type: string
+        formats:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrainingFormat"
+      required:
+        - sport
+        - label
+        - icon
+        - formats
+
+    RegistrationInput:
+      type: object
+      properties:
+        parentName:
+          type: string
+          minLength: 1
+        athleteName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          minLength: 7
+        sport:
+          type: string
+          enum: [football, soccer, basketball, baseball]
+        trainingFormat:
+          type: string
+        ageOrGrade:
+          type: string
+        skillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        notes:
+          type: ["string", "null"]
+      required:
+        - parentName
+        - athleteName
+        - email
+        - phone
+        - sport
+        - trainingFormat
+        - ageOrGrade
+        - skillLevel
+
+    RegistrationResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        id:
+          type: ["string", "null"]
+      required:
+        - success
+        - message
+
+    InquiryInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        phone:
+          type: ["string", "null"]
+        subject:
+          type: string
+        message:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - email
+        - subject
+        - message
+
+    InquiryResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

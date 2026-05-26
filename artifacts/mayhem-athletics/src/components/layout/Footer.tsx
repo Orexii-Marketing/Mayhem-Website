@@ -8,7 +8,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4">
               <img
-                src="/mayhem-logo.jpg"
+                src="/mayhem-logo.png"
                 alt="Mayhem Athletics"
                 className="h-16 w-auto rounded-sm object-contain"
               />

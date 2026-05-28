@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* 1. Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center pt-16 pb-24 overflow-hidden">
+      <section className="relative min-h-[55vh] flex items-center pt-10 pb-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-full object-cover object-center opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />

@@ -33,7 +33,7 @@ export default function Home() {
       {/* 1. Hero Section */}
       <section className="relative min-h-[85vh] flex items-center pt-16 pb-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <ImagePlaceholder label="Hero Training Photo" className="w-full h-full rounded-none border-none opacity-40" />
+          <img src="/team-photo-1.jpg" alt="Mayhem Athletics team" className="w-full h-full object-cover opacity-40" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
         </div>
@@ -162,11 +162,17 @@ export default function Home() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              "Speed Drills", "Basketball 1-on-1", "Football Camp", "Soccer Skills", 
-              "Game Day", "Group Training", "Baseball Drills", "Athlete Progress"
-            ].map((label, idx) => (
-              <ImagePlaceholder key={idx} label={label} className="aspect-square w-full hover:border-primary transition-colors cursor-crosshair" />
-            ))}
+              { label: "Speed Drills" }, { label: "Basketball 1-on-1" }, { label: "Football Camp" }, { label: "Soccer Skills" },
+              { label: "Game Day", src: "/team-photo-1.jpg" }, { label: "Group Training" }, { label: "Baseball Drills" }, { label: "Athlete Progress" }
+            ].map(({ label, src }, idx) =>
+              src ? (
+                <div key={idx} className="aspect-square w-full overflow-hidden rounded-md border border-border/50 hover:border-primary transition-colors">
+                  <img src={src} alt={label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                </div>
+              ) : (
+                <ImagePlaceholder key={idx} label={label} className="aspect-square w-full hover:border-primary transition-colors cursor-crosshair" />
+              )
+            )}
           </div>
         </div>
       </section>

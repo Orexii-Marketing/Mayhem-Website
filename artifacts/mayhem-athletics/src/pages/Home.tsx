@@ -33,9 +33,9 @@ export default function Home() {
       {/* 1. Hero Section */}
       <section className="relative min-h-[85vh] flex items-center pt-16 pb-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img src="/team-photo-1.jpg" alt="Mayhem Athletics team" className="w-full h-full object-cover object-top opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent" />
+          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-full object-cover object-center opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" style={{ maxWidth: '40%' }} />
         </div>
         
         <div className="container mx-auto px-4 z-10 relative">

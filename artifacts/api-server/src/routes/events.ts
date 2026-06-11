@@ -14,6 +14,13 @@ interface AirtableEventFields {
   Notes?: string;
   Status: string;
   RegistrantCount?: number;
+  ScheduleTemplate?: string[];
+}
+
+interface AirtableTemplateFields {
+  Name: string;
+  Schedule: string;
+  Sport?: string;
 }
 
 function generateMockEvents() {
@@ -41,10 +48,11 @@ function generateMockEvents() {
         capacity: 20,
         status: "Active" as const,
         registrantCount: null,
+        scheduleTemplateId: null,
       });
     }
 
-    if ((dow === 6) && i < 14) {
+    if (dow === 6 && i < 14) {
       events.push({
         id: `mock-scrimmage-${id++}`,
         name: "Weekend Scrimmage",
@@ -55,12 +63,37 @@ function generateMockEvents() {
         capacity: 30,
         status: "Active" as const,
         registrantCount: null,
+        scheduleTemplateId: null,
       });
     }
   }
 
   return events.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 14);
 }
+
+router.get("/event-templates", async (_req, res) => {
+  try {
+    if (!isAirtableConfigured()) {
+      res.json([]);
+      return;
+    }
+
+    const records = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
+      sort: [{ field: "Name", direction: "asc" }],
+    });
+
+    const templates = records.map((r) => ({
+      id: r.id,
+      name: r.fields.Name,
+      sport: r.fields.Sport ?? null,
+    }));
+
+    res.json(templates);
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch schedule templates");
+    res.json([]);
+  }
+});
 
 router.get("/events", async (_req, res) => {
   try {
@@ -82,6 +115,7 @@ router.get("/events", async (_req, res) => {
           capacity: r.fields.Capacity,
           status: r.fields.Status,
           registrantCount: r.fields.RegistrantCount ?? null,
+          scheduleTemplateId: r.fields.ScheduleTemplate?.[0] ?? null,
         }));
         res.json(events);
         return;
@@ -95,6 +129,56 @@ router.get("/events", async (_req, res) => {
   }
 });
 
+router.get("/events/:id/schedule", async (req, res) => {
+  const { id } = req.params;
+
+  if (!isAirtableConfigured() || id.startsWith("mock-")) {
+    res.status(404).json({ error: "No schedule available for this event." });
+    return;
+  }
+
+  try {
+    const eventRecords = await listAirtableRecords<AirtableEventFields>("Events", {
+      filterByFormula: `RECORD_ID()='${id}'`,
+    });
+
+    if (eventRecords.length === 0) {
+      res.status(404).json({ error: "Event not found." });
+      return;
+    }
+
+    const event = eventRecords[0];
+    const templateIds = event.fields.ScheduleTemplate;
+
+    if (!templateIds || templateIds.length === 0) {
+      res.status(404).json({ error: "No schedule template attached to this event." });
+      return;
+    }
+
+    const templateId = templateIds[0];
+    const templateRecords = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
+      filterByFormula: `RECORD_ID()='${templateId}'`,
+    });
+
+    if (templateRecords.length === 0) {
+      res.status(404).json({ error: "Schedule template not found." });
+      return;
+    }
+
+    const template = templateRecords[0];
+    const rawSchedule = template.fields.Schedule ?? "";
+    const lines = rawSchedule
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    res.json({ templateName: template.fields.Name, lines });
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch event schedule");
+    res.status(500).json({ error: "Failed to load schedule. Please try again." });
+  }
+});
+
 router.post("/events", async (req, res) => {
   const adminSecret = process.env.ADMIN_SECRET;
   if (adminSecret && req.headers["admin-secret"] !== adminSecret) {
@@ -102,7 +186,7 @@ router.post("/events", async (req, res) => {
     return;
   }
 
-  const { name, type, date, time, location, capacity, notes } = req.body as {
+  const { name, type, date, time, location, capacity, notes, scheduleTemplateId } = req.body as {
     name?: string;
     type?: string;
     date?: string;
@@ -110,6 +194,7 @@ router.post("/events", async (req, res) => {
     location?: string;
     capacity?: number;
     notes?: string;
+    scheduleTemplateId?: string | null;
   };
 
   if (!name || !type || !date || !time || !location || !capacity) {
@@ -117,7 +202,7 @@ router.post("/events", async (req, res) => {
     return;
   }
 
-  const fields: Record<string, string | number> = {
+  const fields: Record<string, string | number | string[]> = {
     Name: name,
     Type: type,
     Date: date,
@@ -127,6 +212,7 @@ router.post("/events", async (req, res) => {
     Status: "Active",
   };
   if (notes) fields.Notes = notes;
+  if (scheduleTemplateId) fields.ScheduleTemplate = [scheduleTemplateId];
 
   try {
     if (isAirtableConfigured()) {

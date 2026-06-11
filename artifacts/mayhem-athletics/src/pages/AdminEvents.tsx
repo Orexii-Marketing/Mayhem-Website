@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCreateEvent } from "@workspace/api-client-react";
+import { useCreateEvent, useListEventTemplates } from "@workspace/api-client-react";
 import type { EventInputType } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,10 @@ export default function AdminEvents() {
   const [location, setLocation] = useState("");
   const [capacity, setCapacity] = useState("20");
   const [notes, setNotes] = useState("");
+  const [scheduleTemplateId, setScheduleTemplateId] = useState("");
   const [created, setCreated] = useState(false);
+
+  const { data: templates } = useListEventTemplates();
 
   const createEvent = useCreateEvent({
     request: { headers: { "Admin-Secret": ADMIN_SECRET } },
@@ -57,6 +60,7 @@ export default function AdminEvents() {
           location,
           capacity: Number(capacity),
           notes: notes || undefined,
+          scheduleTemplateId: scheduleTemplateId || null,
         },
       },
       {
@@ -68,6 +72,7 @@ export default function AdminEvents() {
           setLocation("");
           setCapacity("20");
           setNotes("");
+          setScheduleTemplateId("");
           setTimeout(() => setCreated(false), 4000);
         },
       },
@@ -203,6 +208,31 @@ export default function AdminEvents() {
               required
             />
           </div>
+
+          {templates && templates.length > 0 && (
+            <div className="grid gap-1.5">
+              <Label>Schedule Template (optional)</Label>
+              <Select
+                value={scheduleTemplateId}
+                onValueChange={setScheduleTemplateId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No template — skip agenda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No template</SelectItem>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}{t.sport ? ` (${t.sport})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Parents will see a "View Schedule" button on this event card.
+              </p>
+            </div>
+          )}
 
           <div className="grid gap-1.5">
             <Label htmlFor="notes">Notes (optional)</Label>

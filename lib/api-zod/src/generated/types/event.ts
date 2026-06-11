@@ -22,4 +22,9 @@ export interface Event {
      * @nullable
      */
   registrantCount?: number | null;
+  /**
+     * ID of the linked schedule template. Null when no template is attached.
+     * @nullable
+     */
+  scheduleTemplateId?: string | null;
 }

@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListEvents, useCreateEventRsvp, getListEventsQueryKey } from "@workspace/api-client-react";
+import {
+  useListEvents,
+  useCreateEventRsvp,
+  useGetEventSchedule,
+  getListEventsQueryKey,
+} from "@workspace/api-client-react";
 import type { Event as MayhemEvent } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, UserCheck } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, UserCheck, ClipboardList } from "lucide-react";
 
 type FilterType = "All" | "Practice" | "Scrimmage";
 
@@ -20,6 +25,98 @@ function formatDate(dateStr: string) {
   const [year, month, day] = dateStr.split("-").map(Number);
   const d = new Date(year, month - 1, day);
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function parseScheduleLine(line: string): { time: string; activity: string } | null {
+  const colonIdx = line.indexOf(":");
+  if (colonIdx === -1) return null;
+  const afterFirstColon = line.slice(colonIdx + 1).trim();
+  const secondColon = afterFirstColon.indexOf(":");
+  if (secondColon === -1) {
+    return { time: line.slice(0, colonIdx).trim(), activity: afterFirstColon };
+  }
+  const timePart = line.slice(0, colonIdx + 1 + secondColon).trim();
+  const activityPart = afterFirstColon.slice(secondColon + 1).trim();
+  return { time: timePart, activity: activityPart };
+}
+
+function ScheduleModal({
+  eventId,
+  eventName,
+  open,
+  onClose,
+}: {
+  eventId: string | null;
+  eventName: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { data, isLoading, isError } = useGetEventSchedule(eventId ?? "", {
+    query: { enabled: !!eventId && open },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="bg-card border-border max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-heading uppercase tracking-wide text-xl">
+            Session Schedule
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="bg-background rounded-lg px-4 py-3 mb-1 border border-border">
+          <p className="text-primary font-bold font-heading uppercase text-sm tracking-wide">
+            {eventName}
+          </p>
+        </div>
+
+        {isLoading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        )}
+
+        {isError && (
+          <p className="text-sm text-red-400 py-4 text-center">
+            Could not load schedule. Please try again.
+          </p>
+        )}
+
+        {data && (
+          <div className="flex flex-col gap-0 py-1">
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">
+              {data.templateName}
+            </p>
+            {data.lines.map((line, i) => {
+              const parsed = parseScheduleLine(line);
+              return parsed ? (
+                <div
+                  key={i}
+                  className="flex items-baseline gap-3 py-2.5 border-b border-border last:border-0"
+                >
+                  <span className="text-primary font-bold font-heading text-sm shrink-0 min-w-[80px]">
+                    {parsed.time}
+                  </span>
+                  <span className="text-white text-sm">{parsed.activity}</span>
+                </div>
+              ) : (
+                <div
+                  key={i}
+                  className="py-2.5 border-b border-border last:border-0 text-gray-300 text-sm"
+                >
+                  {line}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <Button onClick={onClose} variant="outline" className="mt-2 font-heading uppercase">
+          Close
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function RsvpModal({
@@ -153,11 +250,15 @@ function RsvpModal({
 function EventCard({
   event,
   onSignUp,
+  onViewSchedule,
 }: {
   event: MayhemEvent;
   onSignUp: (event: MayhemEvent) => void;
+  onViewSchedule: (event: MayhemEvent) => void;
 }) {
   const isScrim = event.type === "Scrimmage";
+  const hasSchedule = !!event.scheduleTemplateId;
+
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/40 transition-colors">
       <div className={`h-1.5 w-full ${isScrim ? "bg-orange-500" : "bg-primary"}`} />
@@ -202,12 +303,24 @@ function EventCard({
           )}
         </div>
 
-        <Button
-          onClick={() => onSignUp(event)}
-          className="mt-auto font-heading uppercase tracking-wide w-full"
-        >
-          Sign Up
-        </Button>
+        <div className="mt-auto flex flex-col gap-2">
+          {hasSchedule && (
+            <Button
+              variant="outline"
+              onClick={() => onViewSchedule(event)}
+              className="font-heading uppercase tracking-wide w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+            >
+              <ClipboardList className="mr-2 w-4 h-4" />
+              View Schedule
+            </Button>
+          )}
+          <Button
+            onClick={() => onSignUp(event)}
+            className="font-heading uppercase tracking-wide w-full"
+          >
+            Sign Up
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -216,6 +329,7 @@ function EventCard({
 export default function Events() {
   const [filter, setFilter] = useState<FilterType>("All");
   const [selectedEvent, setSelectedEvent] = useState<MayhemEvent | null>(null);
+  const [scheduleEvent, setScheduleEvent] = useState<MayhemEvent | null>(null);
   const { data: events, isLoading, isError } = useListEvents();
 
   const filtered =
@@ -275,7 +389,12 @@ export default function Events() {
         {!isLoading && !isError && filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((event) => (
-              <EventCard key={event.id} event={event} onSignUp={setSelectedEvent} />
+              <EventCard
+                key={event.id}
+                event={event}
+                onSignUp={setSelectedEvent}
+                onViewSchedule={setScheduleEvent}
+              />
             ))}
           </div>
         )}
@@ -285,6 +404,13 @@ export default function Events() {
         event={selectedEvent}
         open={!!selectedEvent}
         onClose={() => setSelectedEvent(null)}
+      />
+
+      <ScheduleModal
+        eventId={scheduleEvent?.id ?? null}
+        eventName={scheduleEvent?.name ?? ""}
+        open={!!scheduleEvent}
+        onClose={() => setScheduleEvent(null)}
       />
     </div>
   );

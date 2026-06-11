@@ -94,6 +94,18 @@ export interface InquiryResult {
   message: string;
 }
 
+export interface ScheduleTemplate {
+  id: string;
+  name: string;
+  /** @nullable */
+  sport?: string | null;
+}
+
+export interface EventSchedule {
+  templateName: string;
+  lines: string[];
+}
+
 export type EventType = typeof EventType[keyof typeof EventType];
 
 
@@ -124,6 +136,11 @@ export interface Event {
      * @nullable
      */
   registrantCount?: number | null;
+  /**
+     * ID of the linked schedule template. Null when no template is attached.
+     * @nullable
+     */
+  scheduleTemplateId?: string | null;
 }
 
 export type EventInputType = typeof EventInputType[keyof typeof EventInputType];
@@ -147,6 +164,11 @@ export interface EventInput {
   capacity: number;
   /** @nullable */
   notes?: string | null;
+  /**
+     * ID of a Schedule Template record to link to this event.
+     * @nullable
+     */
+  scheduleTemplateId?: string | null;
 }
 
 export interface EventResult {

@@ -26,11 +26,13 @@ import type {
   EventResult,
   EventRsvpInput,
   EventRsvpResult,
+  EventSchedule,
   HealthStatus,
   InquiryInput,
   InquiryResult,
   RegistrationInput,
   RegistrationResult,
+  ScheduleTemplate,
   SportService
 } from './api.schemas';
 
@@ -274,6 +276,84 @@ export const useCreateRegistration = <TError = ErrorType<ErrorResponse>,
       return useMutation(getCreateRegistrationMutationOptions(options));
     }
 
+export const getListEventTemplatesUrl = () => {
+
+
+
+
+  return `/api/event-templates`
+}
+
+/**
+ * Returns available schedule templates from Airtable. Returns empty array when Airtable is not configured.
+ * @summary List schedule templates
+ */
+export const listEventTemplates = async ( options?: RequestInit): Promise<ScheduleTemplate[]> => {
+
+  return customFetch<ScheduleTemplate[]>(getListEventTemplatesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEventTemplatesQueryKey = () => {
+    return [
+    `/api/event-templates`
+    ] as const;
+    }
+
+
+export const getListEventTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof listEventTemplates>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEventTemplates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEventTemplatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEventTemplates>>> = ({ signal }) => listEventTemplates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEventTemplates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEventTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof listEventTemplates>>>
+export type ListEventTemplatesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List schedule templates
+ */
+
+export function useListEventTemplates<TData = Awaited<ReturnType<typeof listEventTemplates>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEventTemplates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEventTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getListEventsUrl = () => {
 
 
@@ -423,6 +503,84 @@ export const useCreateEvent = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getCreateEventMutationOptions(options));
     }
+
+export const getGetEventScheduleUrl = (id: string,) => {
+
+
+
+
+  return `/api/events/${id}/schedule`
+}
+
+/**
+ * Returns the schedule lines for a specific event based on its linked schedule template.
+ * @summary Get the timed agenda for an event
+ */
+export const getEventSchedule = async (id: string, options?: RequestInit): Promise<EventSchedule> => {
+
+  return customFetch<EventSchedule>(getGetEventScheduleUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetEventScheduleQueryKey = (id: string,) => {
+    return [
+    `/api/events/${id}/schedule`
+    ] as const;
+    }
+
+
+export const getGetEventScheduleQueryOptions = <TData = Awaited<ReturnType<typeof getEventSchedule>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEventSchedule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEventScheduleQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEventSchedule>>> = ({ signal }) => getEventSchedule(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEventSchedule>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetEventScheduleQueryResult = NonNullable<Awaited<ReturnType<typeof getEventSchedule>>>
+export type GetEventScheduleQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the timed agenda for an event
+ */
+
+export function useGetEventSchedule<TData = Awaited<ReturnType<typeof getEventSchedule>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEventSchedule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetEventScheduleQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getCreateEventRsvpUrl = (id: string,) => {
 

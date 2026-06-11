@@ -60,6 +60,18 @@ export const CreateRegistrationBody = zod.object({
 
 
 /**
+ * Returns available schedule templates from Airtable. Returns empty array when Airtable is not configured.
+ * @summary List schedule templates
+ */
+export const ListEventTemplatesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "sport": zod.string().nullish()
+})
+export const ListEventTemplatesResponse = zod.array(ListEventTemplatesResponseItem)
+
+
+/**
  * Returns upcoming Active events sorted by date, falls back to mock events when Airtable is not configured
  * @summary List upcoming events
  */
@@ -72,7 +84,8 @@ export const ListEventsResponseItem = zod.object({
   "location": zod.string(),
   "capacity": zod.number(),
   "status": zod.enum(['Active', 'Cancelled']),
-  "registrantCount": zod.number().nullish().describe('Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.')
+  "registrantCount": zod.number().nullish().describe('Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.'),
+  "scheduleTemplateId": zod.string().nullish().describe('ID of the linked schedule template. Null when no template is attached.')
 })
 export const ListEventsResponse = zod.array(ListEventsResponseItem)
 
@@ -94,7 +107,22 @@ export const CreateEventBody = zod.object({
   "time": zod.string().min(1),
   "location": zod.string().min(1),
   "capacity": zod.number(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "scheduleTemplateId": zod.string().nullish().describe('ID of a Schedule Template record to link to this event.')
+})
+
+
+/**
+ * Returns the schedule lines for a specific event based on its linked schedule template.
+ * @summary Get the timed agenda for an event
+ */
+export const GetEventScheduleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetEventScheduleResponse = zod.object({
+  "templateName": zod.string(),
+  "lines": zod.array(zod.string())
 })
 
 

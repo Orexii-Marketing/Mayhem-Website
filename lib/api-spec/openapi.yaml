@@ -81,6 +81,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /event-templates:
+    get:
+      operationId: listEventTemplates
+      tags: [events]
+      summary: List schedule templates
+      description: Returns available schedule templates from Airtable. Returns empty array when Airtable is not configured.
+      responses:
+        "200":
+          description: List of schedule templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScheduleTemplate"
+
   /events:
     get:
       operationId: listEvents
@@ -128,6 +144,32 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /events/{id}/schedule:
+    get:
+      operationId: getEventSchedule
+      tags: [events]
+      summary: Get the timed agenda for an event
+      description: Returns the schedule lines for a specific event based on its linked schedule template.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Event schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSchedule"
+        "404":
+          description: Event or schedule not found
           content:
             application/json:
               schema:
@@ -340,6 +382,32 @@ components:
         - success
         - message
 
+    ScheduleTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sport:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+
+    EventSchedule:
+      type: object
+      properties:
+        templateName:
+          type: string
+        lines:
+          type: array
+          items:
+            type: string
+      required:
+        - templateName
+        - lines
+
     Event:
       type: object
       properties:
@@ -364,6 +432,9 @@ components:
         registrantCount:
           type: ["number", "null"]
           description: Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.
+        scheduleTemplateId:
+          type: ["string", "null"]
+          description: ID of the linked schedule template. Null when no template is attached.
       required:
         - id
         - name
@@ -396,6 +467,9 @@ components:
           type: number
         notes:
           type: ["string", "null"]
+        scheduleTemplateId:
+          type: ["string", "null"]
+          description: ID of a Schedule Template record to link to this event.
       required:
         - name
         - type

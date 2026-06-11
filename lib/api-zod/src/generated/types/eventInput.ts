@@ -20,4 +20,9 @@ export interface EventInput {
   capacity: number;
   /** @nullable */
   notes?: string | null;
+  /**
+     * ID of a Schedule Template record to link to this event.
+     * @nullable
+     */
+  scheduleTemplateId?: string | null;
 }

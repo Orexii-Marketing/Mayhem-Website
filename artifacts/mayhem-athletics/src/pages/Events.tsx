@@ -60,7 +60,7 @@ function ScheduleModal({
       <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="font-heading uppercase tracking-wide text-xl">
-            Session Schedule
+            Training Plan
           </DialogTitle>
         </DialogHeader>
 
@@ -80,7 +80,7 @@ function ScheduleModal({
           <div className="flex flex-col items-center gap-2 py-6 text-center">
             <ClipboardList className="w-8 h-8 text-gray-600" />
             <p className="text-sm text-gray-400">
-              No practice schedule has been set up for this event yet.
+              No training plan has been set up for this event yet.
             </p>
           </div>
         )}
@@ -313,7 +313,7 @@ function EventCard({
             className="font-heading uppercase tracking-wide w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
           >
             <ClipboardList className="mr-2 w-4 h-4" />
-            View Schedule
+            Training Plan
           </Button>
           <Button
             onClick={() => onSignUp(event)}

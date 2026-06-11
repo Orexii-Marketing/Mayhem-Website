@@ -293,14 +293,14 @@ function EventCard({
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0 text-gray-500" />
-            <span>{event.capacity} spots</span>
+            {event.registrantCount != null ? (
+              <span className="text-primary font-semibold">
+                {event.registrantCount} signed up
+              </span>
+            ) : (
+              <span>Be the first to sign up!</span>
+            )}
           </div>
-          {event.registrantCount != null && (
-            <div className="flex items-center gap-2 text-primary font-semibold">
-              <UserCheck className="w-4 h-4 shrink-0" />
-              <span>{event.registrantCount} kid{event.registrantCount === 1 ? "" : "s"} already joined!</span>
-            </div>
-          )}
         </div>
 
         <div className="mt-auto flex flex-col gap-2">

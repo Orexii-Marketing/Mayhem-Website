@@ -86,31 +86,26 @@ function ScheduleModal({
         )}
 
         {data && (
-          <div className="flex flex-col gap-0 py-1">
+          <div className="flex flex-col gap-0">
             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">
               {data.templateName}
             </p>
-            {data.lines.map((line, i) => {
-              const parsed = parseScheduleLine(line);
-              return parsed ? (
-                <div
-                  key={i}
-                  className="flex items-baseline gap-3 py-2.5 border-b border-border last:border-0"
-                >
-                  <span className="text-primary font-bold font-heading text-sm shrink-0 min-w-[80px]">
-                    {parsed.time}
-                  </span>
-                  <span className="text-white text-sm">{parsed.activity}</span>
-                </div>
-              ) : (
-                <div
-                  key={i}
-                  className="py-2.5 border-b border-border last:border-0 text-gray-300 text-sm"
-                >
-                  {line}
-                </div>
-              );
-            })}
+            <div className="overflow-y-auto max-h-[50vh] pr-1">
+              {data.lines.map((line, i) => {
+                const parsed = parseScheduleLine(line);
+                return parsed ? (
+                  <div
+                    key={i}
+                    className="flex items-baseline gap-3 py-2.5 border-b border-border last:border-0"
+                  >
+                    <span className="text-primary font-bold font-heading text-sm shrink-0 min-w-[80px]">
+                      {parsed.time}
+                    </span>
+                    <span className="text-white text-sm">{parsed.activity}</span>
+                  </div>
+                ) : null;
+              })}
+            </div>
           </div>
         )}
 

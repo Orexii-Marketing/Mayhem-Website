@@ -361,6 +361,9 @@ components:
         status:
           type: string
           enum: [Active, Cancelled]
+        registrantCount:
+          type: ["number", "null"]
+          description: Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.
       required:
         - id
         - name

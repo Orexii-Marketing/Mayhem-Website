@@ -71,7 +71,8 @@ export const ListEventsResponseItem = zod.object({
   "time": zod.string(),
   "location": zod.string(),
   "capacity": zod.number(),
-  "status": zod.enum(['Active', 'Cancelled'])
+  "status": zod.enum(['Active', 'Cancelled']),
+  "registrantCount": zod.number().nullish().describe('Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.')
 })
 export const ListEventsResponse = zod.array(ListEventsResponseItem)
 

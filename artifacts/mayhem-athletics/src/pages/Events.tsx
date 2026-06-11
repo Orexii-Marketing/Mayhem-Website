@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2 } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, UserCheck } from "lucide-react";
 
 type FilterType = "All" | "Practice" | "Scrimmage";
 
@@ -185,8 +185,14 @@ function EventCard({
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0 text-gray-500" />
-            <span>{event.capacity} spots</span>
+            <span>{event.capacity} spots available</span>
           </div>
+          {event.registrantCount != null && event.registrantCount > 0 && (
+            <div className="flex items-center gap-2 text-primary font-semibold">
+              <UserCheck className="w-4 h-4 shrink-0" />
+              <span>{event.registrantCount} kid{event.registrantCount === 1 ? "" : "s"} already joined!</span>
+            </div>
+          )}
         </div>
 
         <Button

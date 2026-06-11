@@ -13,6 +13,7 @@ interface AirtableEventFields {
   Capacity: number;
   Notes?: string;
   Status: string;
+  RegistrantCount?: number;
 }
 
 function generateMockEvents() {
@@ -78,6 +79,7 @@ router.get("/events", async (_req, res) => {
           location: r.fields.Location,
           capacity: r.fields.Capacity,
           status: r.fields.Status,
+          registrantCount: r.fields.RegistrantCount ?? null,
         }));
         res.json(events);
         return;

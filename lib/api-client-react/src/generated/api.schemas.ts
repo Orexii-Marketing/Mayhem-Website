@@ -119,6 +119,11 @@ export interface Event {
   location: string;
   capacity: number;
   status: EventStatus;
+  /**
+     * Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.
+     * @nullable
+     */
+  registrantCount?: number | null;
 }
 
 export type EventInputType = typeof EventInputType[keyof typeof EventInputType];

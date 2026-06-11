@@ -30,36 +30,40 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* 1. Hero Section — desktop: bg image overlay, mobile: stacked */}
-      <section className="relative overflow-hidden">
-        {/* Desktop background image */}
-        <div className="hidden md:block absolute inset-0 z-0">
-          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-full object-cover object-[center_20%] opacity-90" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/20 to-transparent" style={{ maxWidth: '45%' }} />
-        </div>
+      {/* 1. Hero Section */}
+      <section className="relative h-[320px] md:h-[500px] lg:h-[560px] overflow-hidden">
 
-        {/* Text content */}
-        <div className="relative z-10 container mx-auto px-4 pt-10 pb-8 md:py-24 lg:py-32">
+        {/* Photo — anchored to top so heads are never clipped */}
+        <img
+          src="/team-photo-2.png"
+          alt="Mayhem Athletics team"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+
+        {/* Gradient: transparent at top, dark at bottom for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
+
+        {/* Text anchored to bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-4 pb-6 md:pb-10">
           <div className="max-w-2xl">
-            <div className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-sm font-bold uppercase tracking-wider mb-6">
+            <div className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 md:mb-3">
               Ages 8 to 12th Grade
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-heading text-white leading-[0.9] uppercase tracking-tight mb-6">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-heading text-white leading-[0.9] uppercase tracking-tight mb-3 md:mb-4">
               Get to the <span className="text-primary">Next Level</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 font-medium leading-relaxed">
+            <p className="hidden md:block text-base md:text-lg text-gray-300 max-w-lg mb-6 font-medium leading-relaxed">
               Not rec league. We provide intense, metric-driven training by former collegiate athletes.
               Measurable performance improvement. None like it.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-row gap-3">
               <Link href="/register">
-                <Button size="lg" className="h-14 px-8 text-lg font-heading uppercase tracking-wide w-full sm:w-auto">
-                  Register Now <ArrowRight className="ml-2 w-5 h-5" />
+                <Button className="h-10 md:h-12 px-5 md:px-8 text-sm md:text-base font-heading uppercase tracking-wide">
+                  Register Now <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
               <Link href="/contact">
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-heading uppercase tracking-wide w-full sm:w-auto bg-background/50 backdrop-blur-sm border-white/20 hover:bg-white/10 hover:text-white">
+                <Button variant="outline" className="h-10 md:h-12 px-5 md:px-8 text-sm md:text-base font-heading uppercase tracking-wide bg-background/50 backdrop-blur-sm border-white/20 hover:bg-white/10 hover:text-white">
                   Contact Us
                 </Button>
               </Link>
@@ -67,14 +71,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile-only: full-width photo below text */}
-        <div className="md:hidden w-full">
-          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-auto" />
-        </div>
-
-        {/* Desktop spacer so section has enough height */}
-        <div className="hidden md:block h-16" />
       </section>
+
+      {/* Mobile sub-hero: description below the photo */}
+      <div className="md:hidden bg-background px-4 py-6 border-b border-border">
+        <p className="text-base text-gray-300 font-medium leading-relaxed">
+          Not rec league. We provide intense, metric-driven training by former collegiate athletes.
+          Measurable performance improvement. None like it.
+        </p>
+      </div>
 
       {/* 2. Why Mayhem */}
       <section className="py-24 bg-card border-y border-border">

@@ -293,7 +293,7 @@ function EventCard({
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0 text-gray-500" />
-            <span>{event.capacity} spots available</span>
+            <span>{event.capacity} spots</span>
           </div>
           {event.registrantCount != null && (
             <div className="flex items-center gap-2 text-primary font-semibold">

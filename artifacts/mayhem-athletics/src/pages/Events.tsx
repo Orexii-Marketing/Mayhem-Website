@@ -77,9 +77,12 @@ function ScheduleModal({
         )}
 
         {isError && (
-          <p className="text-sm text-red-400 py-4 text-center">
-            Could not load schedule. Please try again.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-6 text-center">
+            <ClipboardList className="w-8 h-8 text-gray-600" />
+            <p className="text-sm text-gray-400">
+              No practice schedule has been set up for this event yet.
+            </p>
+          </div>
         )}
 
         {data && (
@@ -304,16 +307,14 @@ function EventCard({
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          {hasSchedule && (
-            <Button
-              variant="outline"
-              onClick={() => onViewSchedule(event)}
-              className="font-heading uppercase tracking-wide w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-            >
-              <ClipboardList className="mr-2 w-4 h-4" />
-              View Schedule
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={() => onViewSchedule(event)}
+            className="font-heading uppercase tracking-wide w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+          >
+            <ClipboardList className="mr-2 w-4 h-4" />
+            View Schedule
+          </Button>
           <Button
             onClick={() => onSignUp(event)}
             className="font-heading uppercase tracking-wide w-full"

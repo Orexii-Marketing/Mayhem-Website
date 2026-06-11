@@ -30,16 +30,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* 1. Hero Section */}
-      <section className="relative min-h-[55vh] flex items-center pt-10 pb-16 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-full object-cover object-center opacity-90" />
+      {/* 1. Hero Section — desktop: bg image overlay, mobile: stacked */}
+      <section className="relative overflow-hidden">
+        {/* Desktop background image */}
+        <div className="hidden md:block absolute inset-0 z-0">
+          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-full object-cover object-[center_20%] opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" style={{ maxWidth: '40%' }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/20 to-transparent" style={{ maxWidth: '45%' }} />
         </div>
-        
-        <div className="container mx-auto px-4 z-10 relative">
-          <div className="max-w-3xl">
+
+        {/* Text content */}
+        <div className="relative z-10 container mx-auto px-4 pt-10 pb-8 md:py-24 lg:py-32">
+          <div className="max-w-2xl">
             <div className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-sm font-bold uppercase tracking-wider mb-6">
               Ages 8 to 12th Grade
             </div>
@@ -47,7 +49,7 @@ export default function Home() {
               Get to the <span className="text-primary">Next Level</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 font-medium leading-relaxed">
-              Not rec league. We provide intense, metric-driven training by former collegiate athletes. 
+              Not rec league. We provide intense, metric-driven training by former collegiate athletes.
               Measurable performance improvement. None like it.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -64,6 +66,14 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Mobile-only: full-width photo below text */}
+        <div className="md:hidden w-full">
+          <img src="/team-photo-2.png" alt="Mayhem Athletics team" className="w-full h-auto" />
+        </div>
+
+        {/* Desktop spacer so section has enough height */}
+        <div className="hidden md:block h-16" />
       </section>
 
       {/* 2. Why Mayhem */}

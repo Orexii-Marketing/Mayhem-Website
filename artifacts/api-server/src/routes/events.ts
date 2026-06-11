@@ -152,22 +152,38 @@ router.get("/events/:id/schedule", async (req, res) => {
     const event = eventRecords[0];
     const templateIds = event.fields.ScheduleTemplate;
 
-    if (!templateIds || templateIds.length === 0) {
-      res.status(404).json({ error: "No schedule template attached to this event." });
+    let template: { id: string; fields: AirtableTemplateFields } | undefined;
+
+    if (templateIds && templateIds.length > 0) {
+      // Event has a directly linked template — use it
+      const templateRecords = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
+        filterByFormula: `RECORD_ID()='${templateIds[0]}'`,
+      });
+      template = templateRecords[0];
+    }
+
+    if (!template) {
+      // Auto-match by sport keyword in the event name
+      const eventName = (event.fields["Event Name"] ?? "").toLowerCase();
+      const sports = ["Soccer", "Football", "Basketball", "Baseball"];
+      const matchedSport = sports.find((s) => eventName.includes(s.toLowerCase()));
+
+      const allTemplates = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
+        sort: [{ field: "Template Name", direction: "asc" }],
+      });
+
+      if (matchedSport) {
+        template = allTemplates.find((t) => t.fields.Sport === matchedSport) ?? allTemplates[0];
+      } else {
+        template = allTemplates[0];
+      }
+    }
+
+    if (!template) {
+      res.status(404).json({ error: "No training plan found for this event." });
       return;
     }
 
-    const templateId = templateIds[0];
-    const templateRecords = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
-      filterByFormula: `RECORD_ID()='${templateId}'`,
-    });
-
-    if (templateRecords.length === 0) {
-      res.status(404).json({ error: "Schedule template not found." });
-      return;
-    }
-
-    const template = templateRecords[0];
     const rawItems = template.fields.Items ?? "[]";
 
     let lines: string[] = [];

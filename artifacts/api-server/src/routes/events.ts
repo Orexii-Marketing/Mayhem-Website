@@ -40,6 +40,7 @@ function generateMockEvents() {
         location: practiceLocation,
         capacity: 20,
         status: "Active" as const,
+        registrantCount: null,
       });
     }
 
@@ -53,6 +54,7 @@ function generateMockEvents() {
         location: scrimmageLocation,
         capacity: 30,
         status: "Active" as const,
+        registrantCount: null,
       });
     }
   }
@@ -173,13 +175,18 @@ router.post("/events/:id/rsvp", async (req, res) => {
     logger.warn({ err }, "Could not look up event name, proceeding with id");
   }
 
-  const fields = {
-    EventId: id,
-    EventName: eventName,
+  const fields: Record<string, unknown> = {
     ChildName: childName,
     Email: email,
     Phone: phone,
+    EventName: eventName,
   };
+
+  if (isAirtableConfigured() && !id.startsWith("mock-")) {
+    fields["Event"] = [id];
+  } else {
+    fields["EventId"] = id;
+  }
 
   try {
     if (isAirtableConfigured()) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useListEvents, useCreateEventRsvp } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListEvents, useCreateEventRsvp, getListEventsQueryKey } from "@workspace/api-client-react";
 import type { Event as MayhemEvent } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ function RsvpModal({
   const [phone, setPhone] = useState("");
   const [success, setSuccess] = useState(false);
   const rsvp = useCreateEventRsvp();
+  const queryClient = useQueryClient();
 
   function handleClose() {
     setChildName("");
@@ -50,7 +52,12 @@ function RsvpModal({
     if (!event) return;
     rsvp.mutate(
       { id: event.id, data: { childName, email, phone } },
-      { onSuccess: () => setSuccess(true) },
+      {
+        onSuccess: () => {
+          setSuccess(true);
+          queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
+        },
+      },
     );
   }
 
@@ -187,7 +194,7 @@ function EventCard({
             <Users className="w-4 h-4 shrink-0 text-gray-500" />
             <span>{event.capacity} spots available</span>
           </div>
-          {event.registrantCount != null && event.registrantCount > 0 && (
+          {event.registrantCount != null && (
             <div className="flex items-center gap-2 text-primary font-semibold">
               <UserCheck className="w-4 h-4 shrink-0" />
               <span>{event.registrantCount} kid{event.registrantCount === 1 ? "" : "s"} already joined!</span>

@@ -100,7 +100,7 @@ router.get("/events", async (_req, res) => {
     if (isAirtableConfigured()) {
       const today = new Date().toISOString().split("T")[0];
       const records = await listAirtableRecords<AirtableEventFields>("Events", {
-        filterByFormula: `IS_AFTER({Event Date}, '${today}')`,
+        filterByFormula: `NOT(IS_BEFORE({Event Date}, '${today}'))`,
         sort: [{ field: "Event Date", direction: "asc" }],
       });
 

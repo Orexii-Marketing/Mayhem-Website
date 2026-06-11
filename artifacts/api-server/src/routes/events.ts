@@ -11,6 +11,7 @@ interface AirtableEventFields {
   Location: string;
   Capacity: number;
   Status: string;
+  "Age Group"?: string;
   RegistrantCount?: number;
   ScheduleTemplate?: string[];
 }
@@ -98,9 +99,7 @@ router.get("/event-templates", async (_req, res) => {
 router.get("/events", async (_req, res) => {
   try {
     if (isAirtableConfigured()) {
-      const today = new Date().toISOString().split("T")[0];
       const records = await listAirtableRecords<AirtableEventFields>("Events", {
-        filterByFormula: `NOT(IS_BEFORE({Event Date}, '${today}'))`,
         sort: [{ field: "Event Date", direction: "asc" }],
       });
 
@@ -109,13 +108,16 @@ router.get("/events", async (_req, res) => {
           id: r.id,
           name: r.fields["Event Name"],
           type: "Practice" as const,
-          date: r.fields["Event Date"],
-          time: "",
+          date: r.fields["Event Date"]?.split("T")[0] ?? r.fields["Event Date"],
+          time: r.fields["Event Date"]?.includes("T")
+            ? new Date(r.fields["Event Date"]).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : "",
           location: r.fields.Location,
           capacity: r.fields.Capacity,
-          status: r.fields.Status as "Active" | "Cancelled",
+          status: "Active" as const,
           registrantCount: r.fields.RegistrantCount ?? null,
           scheduleTemplateId: r.fields.ScheduleTemplate?.[0] ?? null,
+          ageGroup: r.fields["Age Group"] ?? null,
         }));
         res.json(events);
         return;

@@ -1,0 +1,1 @@
+- [Airtable field names](airtable-field-names.md) — exact field names for Events, Schedule Templates, and Registrations tables; mismatch caused 0-record fallback to mock data

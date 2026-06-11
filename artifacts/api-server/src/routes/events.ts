@@ -16,9 +16,11 @@ interface AirtableEventFields {
 }
 
 interface AirtableTemplateFields {
-  Name: string;
-  Schedule: string;
+  "Template Name": string;
+  Items: string;
   Sport?: string;
+  "Duration Minutes"?: number;
+  Description?: string;
 }
 
 function generateMockEvents() {
@@ -77,12 +79,12 @@ router.get("/event-templates", async (_req, res) => {
     }
 
     const records = await listAirtableRecords<AirtableTemplateFields>("Schedule Templates", {
-      sort: [{ field: "Name", direction: "asc" }],
+      sort: [{ field: "Template Name", direction: "asc" }],
     });
 
     const templates = records.map((r) => ({
       id: r.id,
-      name: r.fields.Name,
+      name: r.fields["Template Name"],
       sport: r.fields.Sport ?? null,
     }));
 
@@ -164,13 +166,22 @@ router.get("/events/:id/schedule", async (req, res) => {
     }
 
     const template = templateRecords[0];
-    const rawSchedule = template.fields.Schedule ?? "";
-    const lines = rawSchedule
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+    const rawItems = template.fields.Items ?? "[]";
 
-    res.json({ templateName: template.fields.Name, lines });
+    let lines: string[] = [];
+    try {
+      const items = JSON.parse(rawItems) as Array<{ time?: string; activity?: string; duration?: number }>;
+      lines = items
+        .filter((item) => item.time && item.activity)
+        .map((item) => `${item.time}: ${item.activity}`);
+    } catch {
+      lines = rawItems
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+    }
+
+    res.json({ templateName: template.fields["Template Name"], lines });
   } catch (err) {
     logger.error({ err }, "Failed to fetch event schedule");
     res.status(500).json({ error: "Failed to load schedule. Please try again." });

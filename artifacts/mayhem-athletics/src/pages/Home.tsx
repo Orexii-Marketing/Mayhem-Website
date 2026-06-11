@@ -30,56 +30,50 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* 1. Hero Section */}
-      <section className="relative h-[320px] md:h-[500px] lg:h-[560px] overflow-hidden">
+      {/* 1. Hero Section — split layout */}
+      <section className="flex flex-col md:flex-row md:h-[560px] lg:h-[600px]">
 
-        {/* Photo — anchored to top so heads are never clipped */}
-        <img
-          src="/team-photo-2.png"
-          alt="Mayhem Athletics team"
-          className="absolute inset-0 w-full h-full object-cover object-top"
-        />
-
-        {/* Gradient: transparent at top, dark at bottom for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
-
-        {/* Text anchored to bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-4 pb-6 md:pb-10">
-          <div className="max-w-2xl">
-            <div className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs md:text-sm font-bold uppercase tracking-wider mb-2 md:mb-3">
-              Ages 8 to 12th Grade
-            </div>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-heading text-white leading-[0.9] uppercase tracking-tight mb-3 md:mb-4">
-              Get to the <span className="text-primary">Next Level</span>
-            </h1>
-            <p className="hidden md:block text-base md:text-lg text-gray-300 max-w-lg mb-6 font-medium leading-relaxed">
-              Not rec league. We provide intense, metric-driven training by former collegiate athletes.
-              Measurable performance improvement. None like it.
-            </p>
-            <div className="flex flex-row gap-3">
-              <Link href="/register">
-                <Button className="h-10 md:h-12 px-5 md:px-8 text-sm md:text-base font-heading uppercase tracking-wide">
-                  Register Now <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline" className="h-10 md:h-12 px-5 md:px-8 text-sm md:text-base font-heading uppercase tracking-wide bg-background/50 backdrop-blur-sm border-white/20 hover:bg-white/10 hover:text-white">
-                  Contact Us
-                </Button>
-              </Link>
-            </div>
+        {/* Left: text panel */}
+        <div className="flex flex-col justify-center bg-background px-6 md:px-10 lg:px-16 py-10 md:py-0 md:w-[44%] shrink-0 order-2 md:order-1">
+          <div className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs font-bold uppercase tracking-widest mb-4 w-fit">
+            Ages 8 to 12th Grade
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading text-white leading-[0.88] uppercase tracking-tight mb-5">
+            Get to the{' '}
+            <span className="text-primary">Next<br />Level</span>
+          </h1>
+          <p className="text-base md:text-lg text-gray-300 max-w-sm mb-8 font-medium leading-relaxed">
+            Not rec league. Intense, metric-driven training by former collegiate athletes.
+            Measurable performance improvement. None like it.
+          </p>
+          <div className="flex flex-row gap-3 flex-wrap">
+            <Link href="/register">
+              <Button size="lg" className="h-12 px-7 text-base font-heading uppercase tracking-wide">
+                Register Now <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="h-12 px-7 text-base font-heading uppercase tracking-wide border-white/20 hover:bg-white/10 hover:text-white">
+                Contact Us
+              </Button>
+            </Link>
           </div>
         </div>
 
-      </section>
+        {/* Right: photo panel — 3:2 photo at this panel width barely clips */}
+        <div className="relative w-full md:w-[56%] h-[260px] md:h-full order-1 md:order-2 overflow-hidden">
+          <img
+            src="/team-photo-2.png"
+            alt="Mayhem Athletics team"
+            className="w-full h-full object-cover object-top"
+          />
+          {/* Subtle left-edge blend into the dark text panel */}
+          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
+          {/* Subtle bottom fade on mobile */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent md:hidden" />
+        </div>
 
-      {/* Mobile sub-hero: description below the photo */}
-      <div className="md:hidden bg-background px-4 py-6 border-b border-border">
-        <p className="text-base text-gray-300 font-medium leading-relaxed">
-          Not rec league. We provide intense, metric-driven training by former collegiate athletes.
-          Measurable performance improvement. None like it.
-        </p>
-      </div>
+      </section>
 
       {/* 2. Why Mayhem */}
       <section className="py-24 bg-card border-y border-border">

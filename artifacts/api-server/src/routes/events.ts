@@ -4,14 +4,12 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
+// Matches the actual Airtable "Events" table field names
 interface AirtableEventFields {
-  Name: string;
-  Type: string;
-  Date: string;
-  Time: string;
+  "Event Name": string;
+  "Event Date": string;
   Location: string;
   Capacity: number;
-  Notes?: string;
   Status: string;
   RegistrantCount?: number;
   ScheduleTemplate?: string[];
@@ -100,20 +98,20 @@ router.get("/events", async (_req, res) => {
     if (isAirtableConfigured()) {
       const today = new Date().toISOString().split("T")[0];
       const records = await listAirtableRecords<AirtableEventFields>("Events", {
-        filterByFormula: `AND({Status}='Active', IS_AFTER({Date}, '${today}'))`,
-        sort: [{ field: "Date", direction: "asc" }],
+        filterByFormula: `IS_AFTER({Event Date}, '${today}')`,
+        sort: [{ field: "Event Date", direction: "asc" }],
       });
 
       if (records.length > 0) {
         const events = records.map((r) => ({
           id: r.id,
-          name: r.fields.Name,
-          type: r.fields.Type,
-          date: r.fields.Date,
-          time: r.fields.Time,
+          name: r.fields["Event Name"],
+          type: "Practice" as const,
+          date: r.fields["Event Date"],
+          time: "",
           location: r.fields.Location,
           capacity: r.fields.Capacity,
-          status: r.fields.Status,
+          status: r.fields.Status as "Active" | "Cancelled",
           registrantCount: r.fields.RegistrantCount ?? null,
           scheduleTemplateId: r.fields.ScheduleTemplate?.[0] ?? null,
         }));
@@ -186,7 +184,7 @@ router.post("/events", async (req, res) => {
     return;
   }
 
-  const { name, type, date, time, location, capacity, notes, scheduleTemplateId } = req.body as {
+  const { name, date, location, capacity, notes, scheduleTemplateId } = req.body as {
     name?: string;
     type?: string;
     date?: string;
@@ -197,16 +195,14 @@ router.post("/events", async (req, res) => {
     scheduleTemplateId?: string | null;
   };
 
-  if (!name || !type || !date || !time || !location || !capacity) {
-    res.status(400).json({ error: "Missing required fields: name, type, date, time, location, capacity" });
+  if (!name || !date || !location || !capacity) {
+    res.status(400).json({ error: "Missing required fields: name, date, location, capacity" });
     return;
   }
 
   const fields: Record<string, string | number | string[]> = {
-    Name: name,
-    Type: type,
-    Date: date,
-    Time: time,
+    "Event Name": name,
+    "Event Date": date,
     Location: location,
     Capacity: capacity,
     Status: "Active",
@@ -244,14 +240,14 @@ router.post("/events/:id/rsvp", async (req, res) => {
   let eventName = id;
   try {
     if (isAirtableConfigured() && !id.startsWith("mock-")) {
-      const records = await listAirtableRecords<{ Name: string }>("Events", {
+      const records = await listAirtableRecords<AirtableEventFields>("Events", {
         filterByFormula: `RECORD_ID()='${id}'`,
       });
       if (records.length === 0) {
         res.status(404).json({ error: "Event not found" });
         return;
       }
-      eventName = records[0].fields.Name;
+      eventName = records[0].fields["Event Name"];
     } else if (id.startsWith("mock-")) {
       const mockEvents = generateMockEvents();
       const mockEvent = mockEvents.find((e) => e.id === id);
@@ -262,21 +258,18 @@ router.post("/events/:id/rsvp", async (req, res) => {
   }
 
   const fields: Record<string, string | string[]> = {
-    ChildName: childName,
-    Email: email,
-    Phone: phone,
-    EventName: eventName,
+    "Participant Name": childName,
+    "Parent Email": email,
+    "Parent Phone": phone,
   };
 
   if (isAirtableConfigured() && !id.startsWith("mock-")) {
     fields["Event"] = [id];
-  } else {
-    fields["EventId"] = id;
   }
 
   try {
     if (isAirtableConfigured()) {
-      const rsvpId = await createAirtableRecord("Event RSVPs", fields);
+      const rsvpId = await createAirtableRecord("Registrations", fields);
       res.status(201).json({
         success: true,
         message: `You're signed up for ${eventName}! See you there.`,
@@ -291,8 +284,8 @@ router.post("/events/:id/rsvp", async (req, res) => {
       });
     }
   } catch (err) {
-    logger.error({ err }, "Failed to save RSVP to Airtable");
-    res.status(500).json({ error: "Failed to submit RSVP. Please try again." });
+    logger.error({ err }, "Failed to save registration to Airtable");
+    res.status(500).json({ error: "Failed to submit registration. Please try again." });
   }
 });
 

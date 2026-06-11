@@ -7,6 +7,14 @@
  */
 
 export * from './errorResponse';
+export * from './event';
+export * from './eventInput';
+export * from './eventInputType';
+export * from './eventResult';
+export * from './eventRsvpInput';
+export * from './eventRsvpResult';
+export * from './eventStatus';
+export * from './eventType';
 export * from './healthStatus';
 export * from './inquiryInput';
 export * from './inquiryResult';

@@ -27,6 +27,11 @@ export function Navbar() {
               Home
             </span>
           </Link>
+          <Link href="/events">
+            <span className={`text-sm font-medium transition-colors hover:text-primary ${location === "/events" ? "text-primary" : "text-muted-foreground"}`}>
+              Events
+            </span>
+          </Link>
           <Link href="/contact">
             <span className={`text-sm font-medium transition-colors hover:text-primary ${location === "/contact" ? "text-primary" : "text-muted-foreground"}`}>
               Contact
@@ -48,6 +53,9 @@ export function Navbar() {
         <div className="md:hidden border-t border-border/50 bg-background py-4 px-4 flex flex-col gap-4">
           <Link href="/">
             <span onClick={toggleMobileMenu} className="block text-lg font-heading uppercase text-foreground hover:text-primary">Home</span>
+          </Link>
+          <Link href="/events">
+            <span onClick={toggleMobileMenu} className="block text-lg font-heading uppercase text-foreground hover:text-primary">Events</span>
           </Link>
           <Link href="/contact">
             <span onClick={toggleMobileMenu} className="block text-lg font-heading uppercase text-foreground hover:text-primary">Contact</span>

@@ -60,6 +60,64 @@ export const CreateRegistrationBody = zod.object({
 
 
 /**
+ * Returns upcoming Active events sorted by date, falls back to mock events when Airtable is not configured
+ * @summary List upcoming events
+ */
+export const ListEventsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.enum(['Practice', 'Scrimmage']),
+  "date": zod.string(),
+  "time": zod.string(),
+  "location": zod.string(),
+  "capacity": zod.number(),
+  "status": zod.enum(['Active', 'Cancelled'])
+})
+export const ListEventsResponse = zod.array(ListEventsResponseItem)
+
+
+/**
+ * Creates an event in Airtable. Requires Admin-Secret header.
+ * @summary Create a new event (admin only)
+ */
+
+
+
+
+
+
+export const CreateEventBody = zod.object({
+  "name": zod.string().min(1),
+  "type": zod.enum(['Practice', 'Scrimmage']),
+  "date": zod.string().min(1),
+  "time": zod.string().min(1),
+  "location": zod.string().min(1),
+  "capacity": zod.number(),
+  "notes": zod.string().nullish()
+})
+
+
+/**
+ * Register a child for a specific event. Saves to Airtable Event RSVPs.
+ * @summary RSVP to an event
+ */
+export const CreateEventRsvpParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+export const createEventRsvpBodyPhoneMin = 7;
+
+
+
+export const CreateEventRsvpBody = zod.object({
+  "childName": zod.string().min(1),
+  "email": zod.string().email(),
+  "phone": zod.string().min(createEventRsvpBodyPhoneMin)
+})
+
+
+/**
  * Send a general inquiry — saves to Airtable
  * @summary Submit a contact inquiry
  */

@@ -94,6 +94,78 @@ export interface InquiryResult {
   message: string;
 }
 
+export type EventType = typeof EventType[keyof typeof EventType];
+
+
+export const EventType = {
+  Practice: 'Practice',
+  Scrimmage: 'Scrimmage',
+} as const;
+
+export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
+
+
+export const EventStatus = {
+  Active: 'Active',
+  Cancelled: 'Cancelled',
+} as const;
+
+export interface Event {
+  id: string;
+  name: string;
+  type: EventType;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+  status: EventStatus;
+}
+
+export type EventInputType = typeof EventInputType[keyof typeof EventInputType];
+
+
+export const EventInputType = {
+  Practice: 'Practice',
+  Scrimmage: 'Scrimmage',
+} as const;
+
+export interface EventInput {
+  /** @minLength 1 */
+  name: string;
+  type: EventInputType;
+  /** @minLength 1 */
+  date: string;
+  /** @minLength 1 */
+  time: string;
+  /** @minLength 1 */
+  location: string;
+  capacity: number;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface EventResult {
+  success: boolean;
+  message: string;
+  /** @nullable */
+  id?: string | null;
+}
+
+export interface EventRsvpInput {
+  /** @minLength 1 */
+  childName: string;
+  email: string;
+  /** @minLength 7 */
+  phone: string;
+}
+
+export interface EventRsvpResult {
+  success: boolean;
+  message: string;
+  /** @nullable */
+  id?: string | null;
+}
+
 export interface ErrorResponse {
   error: string;
 }

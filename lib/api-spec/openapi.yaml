@@ -16,6 +16,8 @@ tags:
     description: Athlete registrations
   - name: inquiries
     description: Contact inquiries
+  - name: events
+    description: Scheduled events and RSVPs
 paths:
   /healthz:
     get:
@@ -68,6 +70,102 @@ paths:
                 $ref: "#/components/schemas/RegistrationResult"
         "400":
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List upcoming events
+      description: Returns upcoming Active events sorted by date, falls back to mock events when Airtable is not configured
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a new event (admin only)
+      description: Creates an event in Airtable. Requires Admin-Secret header.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /events/{id}/rsvp:
+    post:
+      operationId: createEventRsvp
+      tags: [events]
+      summary: RSVP to an event
+      description: Register a child for a specific event. Saves to Airtable Event RSVPs.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventRsvpInput"
+      responses:
+        "201":
+          description: RSVP submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventRsvpResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found
           content:
             application/json:
               schema:
@@ -238,6 +336,110 @@ components:
           type: boolean
         message:
           type: string
+      required:
+        - success
+        - message
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [Practice, Scrimmage]
+        date:
+          type: string
+        time:
+          type: string
+        location:
+          type: string
+        capacity:
+          type: number
+        status:
+          type: string
+          enum: [Active, Cancelled]
+      required:
+        - id
+        - name
+        - type
+        - date
+        - time
+        - location
+        - capacity
+        - status
+
+    EventInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [Practice, Scrimmage]
+        date:
+          type: string
+          minLength: 1
+        time:
+          type: string
+          minLength: 1
+        location:
+          type: string
+          minLength: 1
+        capacity:
+          type: number
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - type
+        - date
+        - time
+        - location
+        - capacity
+
+    EventResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        id:
+          type: ["string", "null"]
+      required:
+        - success
+        - message
+
+    EventRsvpInput:
+      type: object
+      properties:
+        childName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          minLength: 7
+      required:
+        - childName
+        - email
+        - phone
+
+    EventRsvpResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        id:
+          type: ["string", "null"]
       required:
         - success
         - message

@@ -60,7 +60,7 @@ export default function AdminEvents() {
           location,
           capacity: Number(capacity),
           notes: notes || undefined,
-          scheduleTemplateId: scheduleTemplateId || null,
+          scheduleTemplateId: scheduleTemplateId && scheduleTemplateId !== "none" ? scheduleTemplateId : null,
         },
       },
       {
@@ -220,7 +220,7 @@ export default function AdminEvents() {
                   <SelectValue placeholder="No template — skip agenda" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No template</SelectItem>
+                  <SelectItem value="none">No template</SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}{t.sport ? ` (${t.sport})` : ""}

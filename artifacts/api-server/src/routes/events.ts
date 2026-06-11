@@ -175,7 +175,7 @@ router.post("/events/:id/rsvp", async (req, res) => {
     logger.warn({ err }, "Could not look up event name, proceeding with id");
   }
 
-  const fields: Record<string, unknown> = {
+  const fields: Record<string, string | string[]> = {
     ChildName: childName,
     Email: email,
     Phone: phone,

@@ -46,7 +46,7 @@ export async function listAirtableRecords<T = Record<string, unknown>>(
 
 export async function createAirtableRecord(
   tableName: string,
-  fields: Record<string, string | number | boolean | null | undefined>,
+  fields: Record<string, string | number | boolean | null | undefined | string[]>,
 ): Promise<string | null> {
   if (!isAirtableConfigured()) {
     return null;

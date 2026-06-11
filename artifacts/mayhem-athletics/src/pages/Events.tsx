@@ -27,17 +27,21 @@ function formatDate(dateStr: string) {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 }
 
-function parseScheduleLine(line: string): { time: string; activity: string } | null {
+function parseScheduleLine(line: string): { time: string | null; activity: string } {
+  // Try "time - activity" (dash separator)
+  const dashMatch = line.match(/^([0-9][^-]+?)\s+-\s+(.+)$/);
+  if (dashMatch) return { time: dashMatch[1].trim(), activity: dashMatch[2].trim() };
+
+  // Try "time: activity" where time looks like a clock value (digits before colon)
   const colonIdx = line.indexOf(":");
-  if (colonIdx === -1) return null;
-  const afterFirstColon = line.slice(colonIdx + 1).trim();
-  const secondColon = afterFirstColon.indexOf(":");
-  if (secondColon === -1) {
-    return { time: line.slice(0, colonIdx).trim(), activity: afterFirstColon };
+  if (colonIdx > 0 && /^\d/.test(line)) {
+    const before = line.slice(0, colonIdx).trim();
+    const after = line.slice(colonIdx + 1).trim();
+    if (after.length > 0) return { time: before, activity: after };
   }
-  const timePart = line.slice(0, colonIdx + 1 + secondColon).trim();
-  const activityPart = afterFirstColon.slice(secondColon + 1).trim();
-  return { time: timePart, activity: activityPart };
+
+  // Plain text — no time prefix
+  return { time: null, activity: line };
 }
 
 function ScheduleModal({
@@ -92,18 +96,22 @@ function ScheduleModal({
             </p>
             <div className="overflow-y-auto max-h-[50vh] pr-1">
               {data.lines.map((line, i) => {
-                const parsed = parseScheduleLine(line);
-                return parsed ? (
+                const { time, activity } = parseScheduleLine(line);
+                return (
                   <div
                     key={i}
                     className="flex items-baseline gap-3 py-2.5 border-b border-border last:border-0"
                   >
-                    <span className="text-primary font-bold font-heading text-sm shrink-0 min-w-[80px]">
-                      {parsed.time}
+                    {time && (
+                      <span className="text-primary font-bold font-heading text-sm shrink-0 min-w-[60px]">
+                        {time}
+                      </span>
+                    )}
+                    <span className={`text-white text-sm${time ? "" : " font-medium"}`}>
+                      {activity}
                     </span>
-                    <span className="text-white text-sm">{parsed.activity}</span>
                   </div>
-                ) : null;
+                );
               })}
             </div>
           </div>

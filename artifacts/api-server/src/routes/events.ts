@@ -184,30 +184,38 @@ router.get("/events/:id/schedule", async (req, res) => {
       return;
     }
 
-    const rawItems = template.fields.Items ?? "[]";
+    const rawItems = template.fields.Items ?? "";
 
     const decodeHtml = (s: string) =>
       s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 
     let lines: string[] = [];
-    try {
-      const parsed = JSON.parse(rawItems.trim());
-      const items = (Array.isArray(parsed) ? parsed : [parsed]) as Array<Record<string, unknown>>;
-      lines = items
-        .map((item) => {
-          const timeVal = item.time ?? item.Time ?? item.TIME ?? item.start ?? item.Start;
-          const actVal = item.activity ?? item.Activity ?? item.name ?? item.Name ?? item.drill ?? item.Drill;
-          if (timeVal && actVal) return `${decodeHtml(String(timeVal))}: ${decodeHtml(String(actVal))}`;
-          const label = actVal ?? item.activity ?? item.name;
-          return label ? decodeHtml(String(label)) : null;
-        })
-        .filter((l): l is string => l !== null && l.length > 0);
-    } catch (parseErr) {
-      logger.warn({ parseErr }, "JSON parse failed, trying regex fallback");
-      const pairs = [...rawItems.matchAll(/"(?:time|Time|start)"\s*:\s*"([^"]+)"[^}]*?"(?:activity|Activity|name|Name|drill)"\s*:\s*"([^"]+)"/gs)];
-      if (pairs.length > 0) {
-        lines = pairs.map((m) => `${decodeHtml(m[1])}: ${decodeHtml(m[2])}`);
+    const trimmed = rawItems.trim();
+
+    if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+      // JSON format (legacy / advanced use)
+      try {
+        const parsed = JSON.parse(trimmed);
+        const items = (Array.isArray(parsed) ? parsed : [parsed]) as Array<Record<string, unknown>>;
+        lines = items
+          .map((item) => {
+            const timeVal = item.time ?? item.Time ?? item.start ?? item.Start;
+            const actVal = item.activity ?? item.Activity ?? item.name ?? item.Name ?? item.drill ?? item.Drill;
+            if (timeVal && actVal) return `${decodeHtml(String(timeVal))}: ${decodeHtml(String(actVal))}`;
+            const label = actVal ?? item.name;
+            return label ? decodeHtml(String(label)) : null;
+          })
+          .filter((l): l is string => l !== null && l.length > 0);
+      } catch {
+        // malformed JSON — fall through to plain text
+        lines = trimmed.split("\n").map((l) => decodeHtml(l.trim())).filter((l) => l.length > 0);
       }
+    } else {
+      // Plain text: one activity per line, optional "time - activity" or "time: activity" prefix
+      lines = trimmed
+        .split("\n")
+        .map((l) => decodeHtml(l.trim()))
+        .filter((l) => l.length > 0);
     }
 
     res.json({ templateName: template.fields["Template Name"], lines });

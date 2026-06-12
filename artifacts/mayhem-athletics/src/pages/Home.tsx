@@ -114,9 +114,6 @@ export default function Home() {
                         <h4 className="font-bold text-lg">{format.name}</h4>
                         <p className="text-sm text-muted-foreground">{format.description}</p>
                       </div>
-                      <div className="bg-muted px-3 py-1 rounded text-sm font-semibold whitespace-nowrap self-start sm:self-center">
-                        Contact for Pricing
-                      </div>
                     </div>
                   ))}
                 </div>

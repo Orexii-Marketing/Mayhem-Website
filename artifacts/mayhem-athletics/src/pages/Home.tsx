@@ -1,29 +1,11 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Camera, Trophy, Target, Dumbbell, ArrowRight } from "lucide-react";
+import { Trophy, Target, Dumbbell, ArrowRight } from "lucide-react";
 import { useListServices } from "@workspace/api-client-react";
 
-function ImagePlaceholder({ label, className = "" }: { label: string, className?: string }) {
-  return (
-    <div className={`bg-muted flex flex-col items-center justify-center text-muted-foreground rounded-md border border-border/50 ${className}`}>
-      <Camera className="w-8 h-8 mb-2 opacity-50" />
-      <span className="font-heading uppercase tracking-wide text-sm font-semibold">{label}</span>
-    </div>
-  );
-}
-
-function VideoPlaceholder({ title }: { title: string }) {
-  return (
-    <div className="aspect-video w-full bg-card border border-border rounded-lg flex flex-col items-center justify-center relative overflow-hidden group cursor-pointer">
-      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10" />
-      <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center z-20 shadow-lg group-hover:scale-110 transition-transform">
-        <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-      </div>
-      <h3 className="font-heading text-xl mt-6 z-20 text-white font-semibold uppercase tracking-wide drop-shadow-md">{title}</h3>
-    </div>
-  );
-}
+// TODO: swap in real testimonials and set to true when ready
+const SHOW_TESTIMONIALS = false;
 
 export default function Home() {
   const { data: services } = useListServices();
@@ -60,16 +42,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: photo panel — 3:2 photo at this panel width barely clips */}
+        {/* Right: photo panel */}
         <div className="relative w-full md:w-[56%] h-[260px] md:h-full order-1 md:order-2 overflow-hidden">
           <img
             src="/team-photo-2.png"
             alt="Mayhem Athletics team"
             className="w-full h-full object-cover object-top"
           />
-          {/* Subtle left-edge blend into the dark text panel */}
           <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
-          {/* Subtle bottom fade on mobile */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent md:hidden" />
         </div>
 
@@ -104,14 +84,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. Training Video 1 */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <VideoPlaceholder title="Mayhem Training Highlight Reel — Coming Soon" />
-        </div>
-      </section>
+      {/* TODO: add training highlight reel video */}
 
-      {/* 3. Sports Showcase & 5. Services & Pricing */}
+      {/* 3. Training Programs */}
       <section className="py-24 bg-card border-y border-border">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -125,7 +100,6 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {services?.map((sportData, idx) => (
               <div key={idx} className="flex flex-col">
-                <ImagePlaceholder label={`${sportData.label} Training Photo`} className="w-full h-64 mb-6" />
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center text-primary-foreground font-bold text-xl">
                     {sportData.icon}
@@ -148,10 +122,8 @@ export default function Home() {
                 </div>
               </div>
             )) || (
-              // Fallback skeleton if no data
               Array.from({length: 4}).map((_, i) => (
                 <div key={i} className="space-y-4">
-                  <div className="w-full h-64 bg-muted animate-pulse rounded-md" />
                   <div className="h-8 bg-muted animate-pulse rounded w-1/3" />
                   <div className="h-20 bg-muted animate-pulse rounded w-full" />
                 </div>
@@ -161,82 +133,93 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. Photo Gallery */}
+      {/* 4. Photo Gallery */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold font-heading uppercase tracking-tight mb-4">Inside <span className="text-primary">The Facility</span></h2>
-            <div className="h-1 w-20 bg-primary mx-auto"></div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Speed Drills" }, { label: "Basketball 1-on-1" }, { label: "Football Camp" }, { label: "Soccer Skills" },
-              { label: "Game Day", src: "/team-photo-1.jpg" }, { label: "Group Training" }, { label: "Baseball Drills" }, { label: "Athlete Progress" }
-            ].map(({ label, src }, idx) =>
-              src ? (
-                <div key={idx} className="aspect-square w-full overflow-hidden rounded-md border border-border/50 hover:border-primary transition-colors">
-                  <img src={src} alt={label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                </div>
-              ) : (
-                <ImagePlaceholder key={idx} label={label} className="aspect-square w-full hover:border-primary transition-colors cursor-crosshair" />
-              )
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Second Video */}
-      <section className="py-24 bg-card border-y border-border">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <VideoPlaceholder title="See Training in Action — Video Coming Soon" />
-        </div>
-      </section>
-
-      {/* 8. Testimonials */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold font-heading uppercase tracking-tight mb-4">The <span className="text-primary">Results</span></h2>
+            <h2 className="text-3xl md:text-5xl font-bold font-heading uppercase tracking-tight mb-4">Our <span className="text-primary">Athletes</span></h2>
             <div className="h-1 w-20 bg-primary mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "My son went from sitting the bench to starting varsity. Mayhem's intensity changed everything.",
-                author: "Marcus T.",
-                role: "Football Parent"
-              },
-              {
-                quote: "The metric tracking is unreal. We can actually SEE the improvement week over week.",
-                author: "Denise W.",
-                role: "Basketball Parent"
-              },
-              {
-                quote: "No other program pushes like this. My daughter is faster, stronger, and more confident.",
-                author: "James R.",
-                role: "Soccer Parent"
-              }
-            ].map((t, i) => (
-              <Card key={i} className="bg-card border-border/50 relative overflow-hidden">
-                <div className="absolute top-4 left-4 text-primary/20 font-heading text-8xl leading-none rotate-180">"</div>
-                <CardContent className="p-8 pt-12 relative z-10">
-                  <p className="text-lg font-medium mb-6 italic">"{t.quote}"</p>
-                  <div>
-                    <p className="font-bold font-heading uppercase tracking-wide text-primary">{t.author}</p>
-                    <p className="text-sm text-muted-foreground font-semibold">{t.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* 4-photo grid — restructured from 8-slot to show available real photos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Large feature photo — spans full width on mobile, left on desktop */}
+            <div className="md:row-span-2 overflow-hidden rounded-xl border border-border/50 hover:border-primary transition-colors">
+              <img
+                src="/team-photo-1.jpg"
+                alt="Mayhem Athletics soccer team"
+                className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
+                style={{ minHeight: "300px", maxHeight: "520px" }}
+              />
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-border/50 hover:border-primary transition-colors aspect-[4/3]">
+              <img
+                src="/photos/team-winter.jpg"
+                alt="Winter league soccer team"
+                className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-border/50 hover:border-primary transition-colors aspect-[4/3]">
+              <img
+                src="/photos/team-action.png"
+                alt="Mayhem Athletics team game day"
+                className="w-full h-full object-cover object-bottom hover:scale-105 transition-transform duration-500"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 9. CTA Banner & 10. Registration Teaser */}
+      {/* TODO: add training in action video */}
+
+      {/* 5. Testimonials — hidden until real testimonials are collected */}
+      {SHOW_TESTIMONIALS && (
+        <section className="py-24 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold font-heading uppercase tracking-tight mb-4">The <span className="text-primary">Results</span></h2>
+              <div className="h-1 w-20 bg-primary mx-auto"></div>
+            </div>
+
+            {/* TODO: replace with real parent testimonials */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  quote: "My son went from sitting the bench to starting varsity. Mayhem's intensity changed everything.",
+                  author: "Marcus T.",
+                  role: "Football Parent"
+                },
+                {
+                  quote: "The metric tracking is unreal. We can actually SEE the improvement week over week.",
+                  author: "Denise W.",
+                  role: "Basketball Parent"
+                },
+                {
+                  quote: "No other program pushes like this. My daughter is faster, stronger, and more confident.",
+                  author: "James R.",
+                  role: "Soccer Parent"
+                }
+              ].map((t, i) => (
+                <Card key={i} className="bg-card border-border/50 relative overflow-hidden">
+                  <div className="absolute top-4 left-4 text-primary/20 font-heading text-8xl leading-none rotate-180">"</div>
+                  <CardContent className="p-8 pt-12 relative z-10">
+                    <p className="text-lg font-medium mb-6 italic">"{t.quote}"</p>
+                    <div>
+                      <p className="font-bold font-heading uppercase tracking-wide text-primary">{t.author}</p>
+                      <p className="text-sm text-muted-foreground font-semibold">{t.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 6. CTA Banner */}
       <section className="py-24 bg-primary relative overflow-hidden">
-        {/* Abstract background pattern */}
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
         
         <div className="container mx-auto px-4 relative z-10 text-center">

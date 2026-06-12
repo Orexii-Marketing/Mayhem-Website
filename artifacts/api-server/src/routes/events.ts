@@ -38,14 +38,6 @@ interface AirtableRegistrationFields {
   "Registration Status"?: string;
 }
 
-function adminGuard(req: Parameters<Router["use"]>[0] extends infer R ? R : never, res: Parameters<Router["use"]>[1] extends infer R ? R : never): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret && (req as { headers: Record<string, string> }).headers["admin-secret"] !== adminSecret) {
-    (res as { status: (n: number) => { json: (d: unknown) => void } }).status(401).json({ error: "Unauthorized" });
-    return false;
-  }
-  return true;
-}
 
 function generateMockEvents() {
   const events = [];
@@ -146,6 +138,12 @@ router.get("/event-templates/:id", async (req, res) => {
 });
 
 router.patch("/event-templates/:id", async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret && req.headers["admin-secret"] !== adminSecret) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const { id } = req.params;
   const { name, sport, items, durationMinutes, description } = req.body as {
     name?: string;
@@ -177,6 +175,12 @@ router.patch("/event-templates/:id", async (req, res) => {
 });
 
 router.post("/event-templates", async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret && req.headers["admin-secret"] !== adminSecret) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const { name, sport, items, durationMinutes } = req.body as {
     name?: string;
     sport?: string;

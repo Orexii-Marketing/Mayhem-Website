@@ -18,7 +18,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, ClipboardList } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, ClipboardList, Mail, Search } from "lucide-react";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // ─── Type badge / accent helpers ────────────────────────────────────────────
 
@@ -37,6 +39,15 @@ function getTopBarClass(type: string): string {
     case "Camp":      return "bg-purple-500";
     case "Clinic":    return "bg-green-500";
     default:          return "bg-primary";
+  }
+}
+
+function getStatusBadgeClass(status: string): string {
+  switch (status.toLowerCase()) {
+    case "confirmed":  return "bg-green-500/20 text-green-400";
+    case "waitlisted": return "bg-orange-500/20 text-orange-400";
+    case "cancelled":  return "bg-red-500/20 text-red-400";
+    default:           return "bg-yellow-500/20 text-yellow-400";
   }
 }
 
@@ -153,6 +164,140 @@ function ScheduleModal({
   );
 }
 
+// ─── RegistrationLookupModal ─────────────────────────────────────────────────
+
+interface LookupEntry {
+  id: string;
+  athleteName: string;
+  eventId: string | null;
+  eventName: string | null;
+  eventDate: string | null;
+  eventLocation: string | null;
+  status: string;
+}
+
+type LookupState = "idle" | "loading" | "done" | "error";
+
+function RegistrationLookupModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<LookupState>("idle");
+  const [results, setResults] = useState<LookupEntry[]>([]);
+
+  function handleClose() {
+    setEmail("");
+    setState("idle");
+    setResults([]);
+    onClose();
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setState("loading");
+    try {
+      const res = await fetch(`${BASE}/api/registrations?email=${encodeURIComponent(email.trim())}`);
+      if (!res.ok) throw new Error("Request failed");
+      const data = (await res.json()) as LookupEntry[];
+      setResults(data);
+      setState("done");
+    } catch {
+      setState("error");
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="bg-card border-border max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-heading uppercase tracking-wide text-xl flex items-center gap-2">
+            <Search className="w-5 h-5 text-primary" />
+            My Registrations
+          </DialogTitle>
+        </DialogHeader>
+
+        <p className="text-sm text-gray-400 -mt-1">
+          Enter the email you used when signing up to see your registrations.
+        </p>
+
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            disabled={state === "loading"}
+            className="font-heading uppercase tracking-wide shrink-0"
+          >
+            {state === "loading" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Look Up"}
+          </Button>
+        </form>
+
+        {state === "error" && (
+          <p className="text-sm text-red-400">Something went wrong. Please try again.</p>
+        )}
+
+        {state === "done" && results.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Mail className="w-10 h-10 mx-auto mb-3 text-gray-700" />
+            <p className="text-sm">No registrations found for that email address.</p>
+            <p className="text-xs mt-1 text-gray-600">
+              Double-check the email you used when signing up.
+            </p>
+          </div>
+        )}
+
+        {state === "done" && results.length > 0 && (
+          <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
+            {results.map((r) => (
+              <div
+                key={r.id}
+                className="bg-background border border-border rounded-lg px-4 py-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm truncate">{r.athleteName}</p>
+                    {r.eventName && (
+                      <p className="text-primary font-bold font-heading uppercase text-xs tracking-wide mt-0.5">
+                        {r.eventName}
+                      </p>
+                    )}
+                    {r.eventDate && (
+                      <p className="text-gray-400 text-xs mt-0.5 flex items-center gap-1">
+                        <CalendarDays className="w-3 h-3 shrink-0" />
+                        {formatDate(r.eventDate)}
+                      </p>
+                    )}
+                    {r.eventLocation && (
+                      <p className="text-gray-400 text-xs flex items-center gap-1">
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        {r.eventLocation}
+                      </p>
+                    )}
+                  </div>
+                  <Badge
+                    className={`text-xs font-bold border-0 shrink-0 ${getStatusBadgeClass(r.status)}`}
+                  >
+                    {r.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Button onClick={handleClose} variant="outline" className="mt-1 font-heading uppercase">
+          Close
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── RsvpModal ────────────────────────────────────────────────────────────────
 
 function RsvpModal({
@@ -204,10 +349,25 @@ function RsvpModal({
         </DialogHeader>
 
         {success ? (
-          <div className="flex flex-col items-center gap-4 py-6 text-center">
+          <div className="flex flex-col items-center gap-4 py-4 text-center">
             <CheckCircle2 className="w-14 h-14 text-primary" />
             <p className="text-lg font-semibold text-white">{rsvp.data?.message}</p>
-            <Button onClick={handleClose} className="mt-2 font-heading uppercase">Done</Button>
+            {event && (
+              <div className="bg-background rounded-lg px-4 py-3 border border-border text-left w-full">
+                <p className="text-primary font-bold font-heading uppercase text-xs tracking-wide">
+                  {event.name}
+                </p>
+                <p className="text-gray-400 text-sm mt-0.5">
+                  {formatDate(event.date)} &bull; {event.time}
+                </p>
+                <p className="text-gray-400 text-sm">{event.location}</p>
+              </div>
+            )}
+            <p className="text-sm text-gray-400 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 shrink-0" />
+              Check your email for a confirmation.
+            </p>
+            <Button onClick={handleClose} className="mt-1 font-heading uppercase">Done</Button>
           </div>
         ) : (
           <>
@@ -224,7 +384,7 @@ function RsvpModal({
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid gap-1.5">
-                <Label htmlFor="childName">Kid's Name</Label>
+                <Label htmlFor="childName">Athlete's Name</Label>
                 <Input
                   id="childName"
                   placeholder="Athlete's first & last name"
@@ -235,7 +395,7 @@ function RsvpModal({
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Your Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -246,7 +406,7 @@ function RsvpModal({
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Your Phone</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -367,6 +527,7 @@ function EventCard({
 export default function Events() {
   const [filter, setFilter] = useState<string>("All");
   const [showPast, setShowPast] = useState(false);
+  const [showLookup, setShowLookup] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<MayhemEvent | null>(null);
   const [scheduleEvent, setScheduleEvent] = useState<MayhemEvent | null>(null);
   const { data: events, isLoading, isError } = useListEvents();
@@ -391,6 +552,13 @@ export default function Events() {
           <p className="text-gray-400 text-lg max-w-xl">
             Sign your athlete up for an upcoming practice, scrimmage, camp, or clinic. Click "Sign Up" on any session to register.
           </p>
+          <button
+            onClick={() => setShowLookup(true)}
+            className="mt-3 text-sm text-primary hover:text-primary/80 underline underline-offset-2 transition-colors flex items-center gap-1.5"
+          >
+            <Search className="w-3.5 h-3.5" />
+            Already registered? Look up your registrations →
+          </button>
         </div>
 
         <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
@@ -467,6 +635,11 @@ export default function Events() {
         eventName={scheduleEvent?.name ?? ""}
         open={!!scheduleEvent}
         onClose={() => setScheduleEvent(null)}
+      />
+
+      <RegistrationLookupModal
+        open={showLookup}
+        onClose={() => setShowLookup(false)}
       />
     </div>
   );

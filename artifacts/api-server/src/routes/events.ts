@@ -506,13 +506,17 @@ router.post("/events/:id/rsvp", async (req, res) => {
 // ─── Registrations ──────────────────────────────────────────────────────────
 
 router.get("/registrations", async (req, res) => {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret && req.headers["admin-secret"] !== adminSecret) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-
   const { email, eventId } = req.query as { email?: string; eventId?: string };
+
+  // Public email-based lookup — no auth required when an email is provided.
+  // Full list access (no email filter) requires admin auth.
+  if (!email) {
+    const adminSecret = process.env.ADMIN_SECRET;
+    if (adminSecret && req.headers["admin-secret"] !== adminSecret) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+  }
 
   if (!isAirtableConfigured()) {
     res.json([]);
@@ -532,6 +536,43 @@ router.get("/registrations", async (req, res) => {
       sort: [{ field: "Participant Name", direction: "asc" }],
     });
 
+    // For email-based lookups, enrich with event name/date/location
+    if (email && records.length > 0) {
+      const eventIds = [...new Set(records.flatMap((r) => r.fields.Event ?? []))];
+      const eventDetails: Record<string, { name: string; date: string; location: string }> = {};
+
+      if (eventIds.length > 0) {
+        const evFormula = `OR(${eventIds.map((id) => `RECORD_ID()='${id}'`).join(",")})`;
+        const eventRecords = await listAirtableRecords<AirtableEventFields>("Events", {
+          filterByFormula: evFormula,
+        });
+        for (const ev of eventRecords) {
+          eventDetails[ev.id] = {
+            name: ev.fields["Event Name"],
+            date: ev.fields["Event Date"]?.split("T")[0] ?? ev.fields["Event Date"],
+            location: ev.fields.Location,
+          };
+        }
+      }
+
+      const registrations = records.map((r) => {
+        const evId = r.fields.Event?.[0] ?? null;
+        return {
+          id: r.id,
+          athleteName: r.fields["Participant Name"],
+          eventId: evId,
+          eventName: evId ? (eventDetails[evId]?.name ?? null) : null,
+          eventDate: evId ? (eventDetails[evId]?.date ?? null) : null,
+          eventLocation: evId ? (eventDetails[evId]?.location ?? null) : null,
+          status: r.fields["Registration Status"] ?? "Pending",
+        };
+      });
+
+      res.json(registrations);
+      return;
+    }
+
+    // Admin full list response
     const registrations = records.map((r) => ({
       id: r.id,
       athleteName: r.fields["Participant Name"],

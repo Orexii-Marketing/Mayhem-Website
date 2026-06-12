@@ -72,3 +72,48 @@ export async function createAirtableRecord(
   const data = (await response.json()) as { id: string };
   return data.id;
 }
+
+export async function updateAirtableRecord(
+  tableName: string,
+  recordId: string,
+  fields: Record<string, string | number | boolean | null | undefined | string[]>,
+): Promise<void> {
+  if (!isAirtableConfigured()) return;
+
+  const response = await fetch(
+    `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}/${recordId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ fields }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Airtable error ${response.status}: ${errorText}`);
+  }
+}
+
+export async function deleteAirtableRecord(
+  tableName: string,
+  recordId: string,
+): Promise<void> {
+  if (!isAirtableConfigured()) return;
+
+  const response = await fetch(
+    `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}/${recordId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Airtable error ${response.status}: ${errorText}`);
+  }
+}

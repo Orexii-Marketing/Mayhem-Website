@@ -5,6 +5,7 @@ import {
   useCreateEventRsvp,
   useGetEventSchedule,
   getListEventsQueryKey,
+  getGetEventScheduleQueryKey,
 } from "@workspace/api-client-react";
 import type { Event as MayhemEvent } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ function ScheduleModal({
   onClose: () => void;
 }) {
   const { data, isLoading, isError } = useGetEventSchedule(eventId ?? "", {
-    query: { enabled: !!eventId && open },
+    query: { queryKey: getGetEventScheduleQueryKey(eventId ?? ""), enabled: !!eventId && open },
   });
 
   return (

@@ -1,4 +1,5 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,10 +8,16 @@ import Home from "@/pages/Home";
 import Register from "@/pages/Register";
 import Contact from "@/pages/Contact";
 import Events from "@/pages/Events";
-import AdminEvents from "@/pages/AdminEvents";
+import Admin from "@/pages/Admin";
 import { Layout } from "@/components/layout/Layout";
 
 const queryClient = new QueryClient();
+
+function RedirectToAdmin() {
+  const [, navigate] = useLocation();
+  useEffect(() => { navigate("/admin"); }, [navigate]);
+  return null;
+}
 
 function Router() {
   return (
@@ -18,7 +25,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/events" component={Events} />
-        <Route path="/admin/events" component={AdminEvents} />
+        <Route path="/admin" component={Admin} />
+        <Route path="/admin/events" component={RedirectToAdmin} />
         <Route path="/register" component={Register} />
         <Route path="/contact" component={Contact} />
         <Route component={NotFound} />

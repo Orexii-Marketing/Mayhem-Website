@@ -27,4 +27,9 @@ export interface Event {
      * @nullable
      */
   scheduleTemplateId?: string | null;
+  /**
+     * Age group label for this event (e.g. "U10", "8th–12th grade").
+     * @nullable
+     */
+  ageGroup?: string | null;
 }

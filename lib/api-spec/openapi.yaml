@@ -417,7 +417,7 @@ components:
           type: string
         type:
           type: string
-          enum: [Practice, Scrimmage]
+          enum: [Practice, Scrimmage, Camp, Clinic]
         date:
           type: string
         time:
@@ -428,13 +428,16 @@ components:
           type: number
         status:
           type: string
-          enum: [Active, Cancelled]
+          enum: [Active, Published, Draft, Scheduled, Cancelled]
         registrantCount:
           type: ["number", "null"]
           description: Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.
         scheduleTemplateId:
           type: ["string", "null"]
           description: ID of the linked schedule template. Null when no template is attached.
+        ageGroup:
+          type: ["string", "null"]
+          description: Age group label for this event (e.g. "U10", "8th–12th grade").
       required:
         - id
         - name
@@ -453,7 +456,7 @@ components:
           minLength: 1
         type:
           type: string
-          enum: [Practice, Scrimmage]
+          enum: [Practice, Scrimmage, Camp, Clinic]
         date:
           type: string
           minLength: 1

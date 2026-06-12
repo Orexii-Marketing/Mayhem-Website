@@ -112,6 +112,8 @@ export type EventType = typeof EventType[keyof typeof EventType];
 export const EventType = {
   Practice: 'Practice',
   Scrimmage: 'Scrimmage',
+  Camp: 'Camp',
+  Clinic: 'Clinic',
 } as const;
 
 export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
@@ -119,6 +121,9 @@ export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 
 export const EventStatus = {
   Active: 'Active',
+  Published: 'Published',
+  Draft: 'Draft',
+  Scheduled: 'Scheduled',
   Cancelled: 'Cancelled',
 } as const;
 
@@ -141,6 +146,11 @@ export interface Event {
      * @nullable
      */
   scheduleTemplateId?: string | null;
+  /**
+     * Age group label for this event (e.g. "U10", "8th–12th grade").
+     * @nullable
+     */
+  ageGroup?: string | null;
 }
 
 export type EventInputType = typeof EventInputType[keyof typeof EventInputType];
@@ -149,6 +159,8 @@ export type EventInputType = typeof EventInputType[keyof typeof EventInputType];
 export const EventInputType = {
   Practice: 'Practice',
   Scrimmage: 'Scrimmage',
+  Camp: 'Camp',
+  Clinic: 'Clinic',
 } as const;
 
 export interface EventInput {

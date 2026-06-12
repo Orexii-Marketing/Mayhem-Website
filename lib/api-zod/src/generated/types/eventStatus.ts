@@ -11,5 +11,8 @@ export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 
 export const EventStatus = {
   Active: 'Active',
+  Published: 'Published',
+  Draft: 'Draft',
+  Scheduled: 'Scheduled',
   Cancelled: 'Cancelled',
 } as const;

@@ -18,9 +18,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, UserCheck, ClipboardList } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users, CheckCircle2, Loader2, ClipboardList } from "lucide-react";
 
-type FilterType = "All" | "Practice" | "Scrimmage";
+// ─── Type badge / accent helpers ────────────────────────────────────────────
+
+function getTypeBadgeClass(type: string): string {
+  switch (type) {
+    case "Scrimmage": return "bg-orange-500/20 text-orange-400";
+    case "Camp":      return "bg-purple-500/20 text-purple-400";
+    case "Clinic":    return "bg-green-500/20 text-green-400";
+    default:          return "bg-primary/20 text-primary";
+  }
+}
+
+function getTopBarClass(type: string): string {
+  switch (type) {
+    case "Scrimmage": return "bg-orange-500";
+    case "Camp":      return "bg-purple-500";
+    case "Clinic":    return "bg-green-500";
+    default:          return "bg-primary";
+  }
+}
+
+function todayStr(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
 
 function formatDate(dateStr: string) {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -29,11 +53,9 @@ function formatDate(dateStr: string) {
 }
 
 function parseScheduleLine(line: string): { time: string | null; activity: string } {
-  // Try "time - activity" (dash separator)
   const dashMatch = line.match(/^([0-9][^-]+?)\s+-\s+(.+)$/);
   if (dashMatch) return { time: dashMatch[1].trim(), activity: dashMatch[2].trim() };
 
-  // Try "time: activity" where time looks like a clock value (digits before colon)
   const colonIdx = line.indexOf(":");
   if (colonIdx > 0 && /^\d/.test(line)) {
     const before = line.slice(0, colonIdx).trim();
@@ -41,9 +63,10 @@ function parseScheduleLine(line: string): { time: string | null; activity: strin
     if (after.length > 0) return { time: before, activity: after };
   }
 
-  // Plain text — no time prefix
   return { time: null, activity: line };
 }
+
+// ─── ScheduleModal ───────────────────────────────────────────────────────────
 
 function ScheduleModal({
   eventId,
@@ -125,6 +148,8 @@ function ScheduleModal({
     </Dialog>
   );
 }
+
+// ─── RsvpModal ────────────────────────────────────────────────────────────────
 
 function RsvpModal({
   event,
@@ -254,6 +279,8 @@ function RsvpModal({
   );
 }
 
+// ─── EventCard ────────────────────────────────────────────────────────────────
+
 function EventCard({
   event,
   onSignUp,
@@ -263,26 +290,26 @@ function EventCard({
   onSignUp: (event: MayhemEvent) => void;
   onViewSchedule: (event: MayhemEvent) => void;
 }) {
-  const isScrim = event.type === "Scrimmage";
-  const hasSchedule = !!event.scheduleTemplateId;
-
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/40 transition-colors">
-      <div className={`h-1.5 w-full ${isScrim ? "bg-orange-500" : "bg-primary"}`} />
+      <div className={`h-1.5 w-full ${getTopBarClass(event.type)}`} />
       <div className="p-5 flex flex-col gap-4 flex-1">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-heading font-bold uppercase tracking-tight text-white text-lg leading-tight">
             {event.name}
           </h3>
-          <Badge
-            className={`shrink-0 text-xs font-bold uppercase tracking-wider border-0 ${
-              isScrim
-                ? "bg-orange-500/20 text-orange-400"
-                : "bg-primary/20 text-primary"
-            }`}
-          >
-            {event.type}
-          </Badge>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <Badge
+              className={`text-xs font-bold uppercase tracking-wider border-0 ${getTypeBadgeClass(event.type)}`}
+            >
+              {event.type}
+            </Badge>
+            {event.ageGroup && (
+              <Badge className="text-xs font-semibold border-0 bg-white/10 text-gray-300">
+                {event.ageGroup}
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-2 text-sm text-gray-400">
@@ -300,9 +327,9 @@ function EventCard({
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 shrink-0 text-gray-500" />
-            {event.registrantCount != null ? (
-              <span className="text-primary font-semibold">
-                {event.registrantCount} signed up
+            {event.registrantCount != null && event.registrantCount > 0 ? (
+              <span className="text-orange-400 font-semibold">
+                🔥 {event.registrantCount} athlete{event.registrantCount !== 1 ? "s" : ""} signed up
               </span>
             ) : (
               <span>Be the first to sign up!</span>
@@ -331,14 +358,23 @@ function EventCard({
   );
 }
 
+// ─── Events page ─────────────────────────────────────────────────────────────
+
 export default function Events() {
-  const [filter, setFilter] = useState<FilterType>("All");
+  const [filter, setFilter] = useState<string>("All");
+  const [showPast, setShowPast] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<MayhemEvent | null>(null);
   const [scheduleEvent, setScheduleEvent] = useState<MayhemEvent | null>(null);
   const { data: events, isLoading, isError } = useListEvents();
 
-  const filtered =
-    events?.filter((e) => filter === "All" || e.type === filter) ?? [];
+  const today = todayStr();
+
+  const pastCount = (events ?? []).filter((e) => e.date < today).length;
+  const visibleEvents = (events ?? []).filter((e) => showPast || e.date >= today);
+
+  const allTypes = Array.from(new Set(visibleEvents.map((e) => e.type))).sort();
+
+  const filtered = visibleEvents.filter((e) => filter === "All" || e.type === filter);
 
   return (
     <div className="min-h-screen bg-background">
@@ -349,24 +385,35 @@ export default function Events() {
           </h1>
           <div className="h-1 w-16 bg-primary mb-6" />
           <p className="text-gray-400 text-lg max-w-xl">
-            Sign your athlete up for an upcoming practice or scrimmage. Click "Sign Up" on any session to register.
+            Sign your athlete up for an upcoming practice, scrimmage, camp, or clinic. Click "Sign Up" on any session to register.
           </p>
         </div>
 
-        <div className="flex gap-2 mb-8 flex-wrap">
-          {(["All", "Practice", "Scrimmage"] as FilterType[]).map((t) => (
+        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
+            {["All", ...allTypes].map((t) => (
+              <button
+                key={t}
+                onClick={() => setFilter(t)}
+                className={`px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider border transition-colors ${
+                  filter === t
+                    ? "bg-primary text-background border-primary"
+                    : "bg-transparent text-gray-400 border-border hover:border-primary/40 hover:text-white"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {!isLoading && !isError && pastCount > 0 && (
             <button
-              key={t}
-              onClick={() => setFilter(t)}
-              className={`px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider border transition-colors ${
-                filter === t
-                  ? "bg-primary text-background border-primary"
-                  : "bg-transparent text-gray-400 border-border hover:border-primary/40 hover:text-white"
-              }`}
+              onClick={() => setShowPast((v) => !v)}
+              className="text-sm text-gray-500 hover:text-gray-300 underline underline-offset-2 transition-colors whitespace-nowrap"
             >
-              {t}
+              {showPast ? "Hide past events" : `Show past events (${pastCount})`}
             </button>
-          ))}
+          )}
         </div>
 
         {isLoading && (

@@ -78,14 +78,15 @@ export const ListEventTemplatesResponse = zod.array(ListEventTemplatesResponseIt
 export const ListEventsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "type": zod.enum(['Practice', 'Scrimmage']),
+  "type": zod.enum(['Practice', 'Scrimmage', 'Camp', 'Clinic']),
   "date": zod.string(),
   "time": zod.string(),
   "location": zod.string(),
   "capacity": zod.number(),
-  "status": zod.enum(['Active', 'Cancelled']),
+  "status": zod.enum(['Active', 'Published', 'Draft', 'Scheduled', 'Cancelled']),
   "registrantCount": zod.number().nullish().describe('Number of kids signed up for this event. Null when Airtable is not configured or the Count field is not set up.'),
-  "scheduleTemplateId": zod.string().nullish().describe('ID of the linked schedule template. Null when no template is attached.')
+  "scheduleTemplateId": zod.string().nullish().describe('ID of the linked schedule template. Null when no template is attached.'),
+  "ageGroup": zod.string().nullish().describe('Age group label for this event (e.g. \"U10\", \"8th–12th grade\").')
 })
 export const ListEventsResponse = zod.array(ListEventsResponseItem)
 
@@ -102,7 +103,7 @@ export const ListEventsResponse = zod.array(ListEventsResponseItem)
 
 export const CreateEventBody = zod.object({
   "name": zod.string().min(1),
-  "type": zod.enum(['Practice', 'Scrimmage']),
+  "type": zod.enum(['Practice', 'Scrimmage', 'Camp', 'Clinic']),
   "date": zod.string().min(1),
   "time": zod.string().min(1),
   "location": zod.string().min(1),

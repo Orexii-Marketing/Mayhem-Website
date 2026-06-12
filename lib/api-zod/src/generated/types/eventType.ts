@@ -12,4 +12,6 @@ export type EventType = typeof EventType[keyof typeof EventType];
 export const EventType = {
   Practice: 'Practice',
   Scrimmage: 'Scrimmage',
+  Camp: 'Camp',
+  Clinic: 'Clinic',
 } as const;
